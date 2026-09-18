@@ -1,0 +1,79 @@
+# NuvioWeb single-container per CasaOS (e qualsiasi Docker Compose).
+# Immagine pubblicata su GHCR: ghcr.io/fenrir22/nuvioweb-single:nightly
+#
+# Come installare su CasaOS:
+#   1. CasaOS -> "App Center" -> icona "+" (installazione manuale)
+#   2. incolla questo file oppure usa il file -> "Custom" -> "Crea da Docker Compose"
+#   3. COMPILA i campi vuoti sotto (soprattutto il pacchetto env).
+#   4. IMPORTANTE: NUVIO_ORIGIN deve UGUAGLIARE l'URL che digiti nel browser
+#      (es. http://192.168.1.50:8080). Se non combacia, il playback dà 403.
+services:
+  nuvioweb:
+    image: ghcr.io/fenrir22/nuvioweb-single:nightly
+    container_name: nuvioweb
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    environment:
+      # Obbligatorie (servono per far caricare l'app nel browser):
+      NUVIO_SUPABASE_URL: ""
+      NUVIO_SUPABASE_ANON_KEY: ""
+      # Da allineare all'URL reale del server (vedi nota sopra):
+      NUVIO_ORIGIN: "http://localhost:8080"
+
+      # Opzionali lato browser:
+      NUVIO_SUPABASE_FALLBACK_URL: ""
+      YOUTUBE_PROXY_URL: "youtube-proxy.html"
+      INTRODB_API_URL: "https://api.introdb.app/"
+      IMDB_RATINGS_API_BASE_URL: ""
+      IMDB_TAPFRAME_API_BASE_URL: ""
+      AVATAR_PUBLIC_BASE_URL: ""
+      UNIQUE_CONTRIBUTIONS_BASE_URL: ""
+      DONATIONS_BASE_URL: ""
+      DONATIONS_DONATE_URL: ""
+      SPONSOR_NAMES: "ragmehos."
+      TRAKT_CLIENT_ID: ""
+      SIMKL_CLIENT_ID: ""
+      SIMKL_APP_NAME: "nuvio"
+      PREMIUMIZE_CLIENT_ID: ""
+
+      # Bridge server-side (opzionali):
+      TRAKT_CLIENT_SECRET: ""
+      TRAKT_REDIRECT_URI: "urn:ietf:wg:oauth:2.0:oob"
+      NUVIO_WEB_PUSH_PUBLIC_KEY: ""
+      NUVIO_WEB_PUSH_PRIVATE_KEY: ""
+      NUVIO_WEB_PUSH_SUBJECT: ""
+
+      # Tuning playback (valori di default upstream — lascia così se non sai):
+      NUVIO_PLAYBACK_READRATE_BURST: "16"
+      NUVIO_PLAYBACK_HLS_TIME: "4"
+      NUVIO_PLAYBACK_HLS_LIST_SIZE: "8"
+
+    # init introduce pid 1 gestito e cap_drop/security_opt riducono i privilegi.
+    # read_only è volutamente disattivato: lo script all'avvio genera
+    # /usr/share/nginx/html/nuvio.env.js nella webroot (nginx deve poter scrivere).
+    init: true
+    # read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=1610612736,mode=1770
+
+# Metadati opzionali per la UI di CasaOS:
+x-casaos:
+  architectures:
+    - amd64
+  main: nuvioweb
+  description:
+    en_us: NuvioWeb single container (frontend + all bridges) built from GitHub Actions.
+    it_it: NuvioWeb container singolo (frontend + tutti i bridge) costruito da GitHub Actions.
+  tagline:
+    en_us: Self-hosted NuvioWeb from GHCR
+    it_it: NuvioWeb self-hosted da GHCR
+  developer: fenrir22
+  author: fenrir22
+  icon: https://raw.githubusercontent.com/falcononrails/NuvioWeb/nightly/assets/brand/nuvio-favicon.png
+  category: Media
+  port_map: "8080"
