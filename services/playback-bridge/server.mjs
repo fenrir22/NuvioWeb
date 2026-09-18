@@ -16,11 +16,16 @@ const inputArgs = [
   "http,tcp",
   "-format_whitelist",
   "matroska,webm,mov,mpegts,avi",
+  "-fflags",
+  "+genpts",
   "-analyzeduration",
   "5000000",
   "-probesize",
   "5000000"
 ];
+const readrateBurst = Math.max(0, Math.min(120, Number(process.env.NUVIO_PLAYBACK_READRATE_BURST) || 16));
+const hlsTime = String(Math.max(1, Math.min(30, Number(process.env.NUVIO_PLAYBACK_HLS_TIME) || 4)));
+const hlsListSize = String(Math.max(3, Math.min(60, Number(process.env.NUVIO_PLAYBACK_HLS_LIST_SIZE) || 8)));
 const token = () => randomBytes(24).toString("hex");
 const failure = (status, message) => Object.assign(new Error(message), { status });
 const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -282,7 +287,11 @@ export async function createPlaybackBridge({
       "-readrate",
       "1",
       "-readrate_initial_burst",
-      "16",
+      String(readrateBurst),
+      // Keep audio and copied video on the same keyframe after a seek. Without
+      // this the video starts at the previous keyframe while audio starts at the
+      // requested timestamp, leaving seconds of silent video (A/V desync).
+      "-noaccurate_seek",
       "-ss",
       String(position),
       "-i",
@@ -310,9 +319,9 @@ export async function createPlaybackBridge({
       "-f",
       "hls",
       "-hls_time",
-      "4",
+      hlsTime,
       "-hls_list_size",
-      "8",
+      hlsListSize,
       "-hls_flags",
       "delete_segments+independent_segments+temp_file",
       "-hls_segment_type",

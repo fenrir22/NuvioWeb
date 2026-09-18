@@ -1,0 +1,39 @@
+# Everything (frontend + all bridges) in a single container.
+# Usage: docker compose -f docker-compose.single.yml up -d --build
+# Default port 4173, override with: NUVIO_PORT=... docker compose -f docker-compose.single.yml up -d
+services:
+  nuvioweb-single:
+    container_name: nuvioweb-single
+    build:
+      context: .
+      dockerfile: Dockerfile.single
+    image: ghcr.io/fenrir22/nuvioweb-single:nightly
+    ports:
+      - "${NUVIO_PORT:-4173}:80"
+    environment:
+      NUVIO_ORIGIN: ${NUVIO_ORIGIN:-http://localhost:4173}
+      NUVIO_SUPABASE_URL: ${NUVIO_SUPABASE_URL:-}
+      NUVIO_SUPABASE_ANON_KEY: ${NUVIO_SUPABASE_ANON_KEY:-}
+      NUVIO_SUPABASE_FALLBACK_URL: ${NUVIO_SUPABASE_FALLBACK_URL:-}
+      YOUTUBE_PROXY_URL: ${YOUTUBE_PROXY_URL:-youtube-proxy.html}
+      INTRODB_API_URL: "${INTRODB_API_URL:-https://api.introdb.app/}"
+      IMDB_RATINGS_API_BASE_URL: ${IMDB_RATINGS_API_BASE_URL:-}
+      IMDB_TAPFRAME_API_BASE_URL: ${IMDB_TAPFRAME_API_BASE_URL:-}
+      AVATAR_PUBLIC_BASE_URL: ${AVATAR_PUBLIC_BASE_URL:-}
+      UNIQUE_CONTRIBUTIONS_BASE_URL: ${UNIQUE_CONTRIBUTIONS_BASE_URL:-}
+      DONATIONS_BASE_URL: ${DONATIONS_BASE_URL:-}
+      DONATIONS_DONATE_URL: ${DONATIONS_DONATE_URL:-}
+      SPONSOR_NAMES: ${SPONSOR_NAMES:-ragmehos.}
+      TRAKT_CLIENT_ID: ${TRAKT_CLIENT_ID:-}
+      TRAKT_CLIENT_SECRET: ${TRAKT_CLIENT_SECRET:-}
+      TRAKT_REDIRECT_URI: ${TRAKT_REDIRECT_URI:-urn:ietf:wg:oauth:2.0:oob}
+      SIMKL_CLIENT_ID: ${SIMKL_CLIENT_ID:-}
+      SIMKL_APP_NAME: ${SIMKL_APP_NAME:-nuvio}
+      PREMIUMIZE_CLIENT_ID: ${PREMIUMIZE_CLIENT_ID:-}
+      NUVIO_WEB_PUSH_PUBLIC_KEY: ${NUVIO_WEB_PUSH_PUBLIC_KEY:-}
+      NUVIO_WEB_PUSH_PRIVATE_KEY: ${NUVIO_WEB_PUSH_PRIVATE_KEY:-}
+      NUVIO_WEB_PUSH_SUBJECT: ${NUVIO_WEB_PUSH_SUBJECT:-}
+      NUVIO_PLAYBACK_READRATE_BURST: ${NUVIO_PLAYBACK_READRATE_BURST:-16}
+      NUVIO_PLAYBACK_HLS_TIME: ${NUVIO_PLAYBACK_HLS_TIME:-4}
+      NUVIO_PLAYBACK_HLS_LIST_SIZE: ${NUVIO_PLAYBACK_HLS_LIST_SIZE:-8}
+    restart: unless-stopped
